@@ -112,7 +112,6 @@ def load_calibration_profile(profile_file):
             f"Unsupported calibration method '{profile['method']}'. "
             f"Supported methods: {sorted(supported_methods)}."
         )
-
     wavelengths = _normalise_wavelengths(profile["wavelengths"])
     C = _as_float_array(profile["C"], expected_length=wavelengths.size, name="C")
 
@@ -372,6 +371,7 @@ def validate_calibration_config(config):
     output_diagnostics = config.get("output_diagnostics", "calibration_diagnostics.npz")
 
     validated = {
+        "S_i_hat": config.get("S_i_hat"),
         "method": method,
         "wavelengths": wavelengths,
         "thickness": thickness,
@@ -841,10 +841,11 @@ def _build_dataset(config):
     if len(no_load_measurements) == 0:
         warnings.warn(
             "No no-load measurements were found after processing load steps; "
-            "using a default initial S_i_hat guess of [1, 0, 0].",
+            "using a default initial S_i_hat from the config file.",
             stacklevel=2,
         )
-        initial_s_i_hat = _default_initial_s_i_hat()
+        # initial_s_i_hat = _default_initial_s_i_hat()
+        initial_s_i_hat = config["S_i_hat"]
     else:
         noload = np.concatenate(no_load_measurements, axis=0)
         initial_s_i_hat = _initial_s_i_hat_from_noload(noload)

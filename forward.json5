@@ -1,0 +1,8 @@
+{
+  stress_filename: "stress.npy",
+  thickness: 0.01,
+  wavelengths: [650, 550, 450],
+  C: [3e-9, 3e-9, 3e-9],
+  S_i_hat: [1.0, 0.0, 0.0],
+  output_filename: "synthetic_stack.tiff"
+}

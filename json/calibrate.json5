@@ -1,0 +1,21 @@
+{
+    // Incoming normalized Stokes vector [S1_hat, S2_hat, S3_hat]
+    S_i_hat : [0.0, 0.0, 1.0], // Incoming polarization state
+    binning: 12,
+    //crop : [624, 742, 230, 340], //  Crop region as [x1, x2, y1, y2]
+    crop : [1304, 1686, 464, 846],
+    wavelengths : [650, 550, 450], // R, G, B wavelengths (nm)
+    C : [ 1.413286e-09, 1.456910e-09, 1.113806e-09], // stress-optic coefficient for each wavelength (1/Pa)
+    
+    thickness : 0.01, // thickness of sample in m 
+    geometry:
+    {pixels_per_meter: 20000},
+    polarisation_efficiency : 0.95,
+    load_steps: [
+    {load: 76.8, image_file: "/mnt/d/photoelastimetry/2026_03_16_12_19_16_018/02002060_diskSaving1/"},
+    ],
+    output_filename : "images/disk/predicted_stress_map.tiff",
+    debug: false,
+    knot_spacing: 8,
+    max_iterations: 100
+}

@@ -102,6 +102,7 @@ def retardance_to_delta_sigma(retardance, wavelengths, C_values, nu, L, reductio
             f"retardance last axis must have length {wavelengths.shape[0]}, got {retardance.shape[-1]}"
         )
 
+
     factor = wavelengths / (2 * np.pi * C_values * nu * L)
     delta_sigma = retardance * factor
 

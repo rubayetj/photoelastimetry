@@ -431,8 +431,8 @@ if __name__ == "__main__":
     plt.figure(figsize=(12, 12), layout="constrained")
 
     # Disk and load parameters
-    R = 0.01  # Radius of the disk (m)
-    P = 1.0  # Total load per unit thickness (N/m)
+    R = 0.0084565       # Radius of the disk (m)
+    P = 0.2473/0.00934  # Total load per unit thickness (N/m)
 
     with open("json/test.json5", "r") as f:
         params = json5.load(f)
@@ -449,6 +449,10 @@ if __name__ == "__main__":
     X, Y = np.meshgrid(x, y)
     R_grid = np.sqrt(X**2 + Y**2)  # radial distance from center
     mask = R_grid <= R
+
+    cx_px = (n - 1) / 2
+    r_px  = (n - 1) / 2
+    print(f"Synthetic circle — center: ({cx_px}, {cx_px}) px,  radius: {r_px} px  (image size: {n}×{n})")
 
     # Get S_i_hat from params if available, otherwise use default
     S_i_hat = np.array(params.get("S_i_hat", [1.0, 0.0, 0.0]))
