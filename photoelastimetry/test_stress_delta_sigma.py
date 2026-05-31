@@ -107,6 +107,8 @@ def image_to_stress_delta_sigma(params, output_dir="."):
     )
 
     delta_sigma = seed.delta_sigma
+
+    
     theta       = seed.theta
 
     # ── Extract delta_sigma at disk center — single pixel ─────────────────────
@@ -154,6 +156,24 @@ def image_to_stress_delta_sigma(params, output_dir="."):
     ds_ana = np.array([del_sigma_disk(P_DISK, R_DISK, H_DISK, xp, 0.0) for xp in x_phys]) / 1e3
     x_norm = x_phys / R_DISK
 
+    print(f"\n-- Diameter error profile (row={iy}) ----------------------------")
+    print(f"  {'x/R':>7}  {'Exp (kPa)':>11}  {'Ana (kPa)':>11}  {'|Err|/Ana (%)':>14}")
+    print(f"  {'-'*7}  {'-'*11}  {'-'*11}  {'-'*14}")
+    for xn, exp_v, ana_v in zip(x_norm, ds_exp, ds_ana):
+        rel = abs(exp_v - ana_v) / max(ana_v, 1e-12) * 100
+        print(f"  {xn:>7.3f}  {exp_v:>11.4f}  {ana_v:>11.4f}  {rel:>14.2f}")
+    print("-----------------------------------------------------------------\n")
+
+    csv_path = os.path.join(output_dir, "diameter_profile.csv")
+    np.savetxt(
+        csv_path,
+        np.column_stack([x_norm, ds_ana, ds_exp]),
+        delimiter=",",
+        header="position,analytical_del_sigma,experimental_stress",
+        comments="",
+    )
+    print(f"Saved: {csv_path}")
+
     fig, ax = plt.subplots(figsize=(8, 5))
     ax.scatter(x_norm, ds_exp, s=60, color="steelblue", alpha=0.7,
                label="Seeding (phase_decomposed_seeding)")
@@ -176,6 +196,7 @@ def image_to_stress_delta_sigma(params, output_dir="."):
     tifffile.imwrite(th_path, theta.astype(np.float32))
     print(f"Saved: {ds_path}")
     print(f"Saved: {th_path}")
+
 
     return seed, delta_sigma, theta, ix, iy
 

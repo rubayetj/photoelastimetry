@@ -1,23 +1,24 @@
 {
   method: "brazilian_disk",
-  wavelengths: [650, 550, 450],
-  thickness: 0.01,
+  wavelengths: [650, 550, 450],       // R, G, B (nm)
+  thickness: 0.00699,                 // Disk 1 thickness (m)
+
+  S_i_hat: [0.0, 0.0, 1.0],          // initial guess — circular polarisation
+
   geometry: {
-    // radius_m: 0.01,
-    // center_px: [488, 415],
-    pixels_per_meter: 17000,
+    radius_m: 0.00727,                // Disk 1 radius = 14.54/2 mm
+    center_px: [488, 415],            // update with actual disk center in pixels
+    pixels_per_meter: 17000,          // update to match your camera scale
     edge_margin_fraction: 0.9,
-    contact_exclusion_fraction: 0.12
+    contact_exclusion_fraction: 0.12,
   },
+
+  // load = force_N / thickness_m = (278e-3 * 9.81) / 0.00699 ≈ 390 N/m
   load_steps: [
-    {load: 0.0, image_file:   "images/2025_04_15/2025_04_15_15_39_38_342/02002060_diskSaving1/0000000/frame0000000000.raw"},
-    {load: 150.0, image_file: "images/2025_04_15/2025_04_15_15_40_24_898/02002060_diskSaving1/0000000/frame0000000000.raw"},
-    {load: 300.0, image_file: "images/2025_04_15/2025_04_15_15_41_09_580/02002060_diskSaving1/0000000/frame0000000000.raw"},
-    {load: 450.0, image_file: "images/2025_04_15/2025_04_15_15_41_53_791/02002060_diskSaving1/0000000/frame0000000000.raw"}
+    { load: 2.727, image_file: "/mnt/d/photoelastimetry/cp1/278.tiff" },  // 278g * 9.81/1000 N
   ],
-//   dark_frame_file: "calib/dark.npy",
-//   blank_frame_file: "calib/blank.npy",
-  output_profile: "calib/profile.json5",
-  output_report: "calib/report.md",
-  output_diagnostics: "calib/diagnostics.npz"
+
+  output_profile:     "calibration_profile.json5",
+  output_report:      "calibration_report.md",
+  output_diagnostics: "calibration_diagnostics.npz",
 }

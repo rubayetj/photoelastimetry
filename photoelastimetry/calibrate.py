@@ -21,7 +21,7 @@ import numpy as np
 from scipy.optimize import least_squares
 
 import photoelastimetry.io
-from photoelastimetry.generate.disk import diametrical_stress_cartesian
+from photoelastimetry.generate.disk import huang2014
 from photoelastimetry.image import (
     compute_normalised_stokes,
     compute_stokes_components,
@@ -821,8 +821,8 @@ def _build_dataset(config):
         measured_steps.append(measured)
 
         if config["method"] == "brazilian_disk":
-            sigma_xx, sigma_yy, sigma_xy = diametrical_stress_cartesian(
-                X, Y, P=load, R=config["geometry"]["radius_m"]
+            sigma_xx, sigma_yy, sigma_xy = pointload_stress(
+                X, Y, P=load, R=config["geometry"]["radius_m"], h=config["thickness"]
             )
             sigma_xx_steps.append(sigma_xx[y_idx, x_idx])
             sigma_yy_steps.append(sigma_yy[y_idx, x_idx])
@@ -1139,8 +1139,8 @@ def _build_visual_diagnostics(dataset, fit_result):
     if dataset["method"] == "brazilian_disk":
         X = dataset["X"]
         Y = dataset["Y"]
-        sigma_xx, sigma_yy, sigma_xy = diametrical_stress_cartesian(
-            X, Y, P=load, R=dataset["geometry"]["radius_m"]
+        sigma_xx, sigma_yy, sigma_xy = pointload_stress(
+            X, Y, P=load, R=dataset["geometry"]["radius_m"], h=dataset["thickness"]
         )
     else:
         sigma_xx = np.zeros((H, W), dtype=float)

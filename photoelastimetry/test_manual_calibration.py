@@ -14,18 +14,22 @@ import photoelastimetry.io
 import photoelastimetry.plotting
 from photoelastimetry.image import compute_normalised_stokes, compute_stokes_components
 from photoelastimetry.main import _merge_params_with_calibration, _normalise_wavelengths
-from photoelastimetry.generate.disk import diametrical_stress_cartesian
+from photoelastimetry.generate.disk import diametrical_stress_cartesian, huang2014
+
 
 
 #──Constants─────────────────────────────────────────────────────────────────
 
 # Disk geometry & load (hardcoded defaults)
-Load = 335   #grams
+Load =  600         #grams
 P_DISK = Load*9.81/1000         # N
-R_DISK = 17.41/(1000*2)         # m  (radius)
-H_DISK = 0.00686          # m  (thickness)
+R_DISK = 14.54/(1000*2)         # m  (radius) DISK 1
+H_DISK = 0.00699                # m  (thickness) DISK 1
+#R_DISK = 17.41/(1000*2)         # m  (radius) DISK 2
+#H_DISK = 0.00686                # m  (thickness) DISK 2
 C_BOUNDS = (1e-15, 1e-4)
 N_POINTS = 5000
+
 
 
 def del_sigma_disk(P, R, h, x, y):
@@ -47,12 +51,12 @@ def del_sigma_disk(P, R, h, x, y):
     """
     X = np.atleast_2d(np.asarray(x, dtype=float))
     Y = np.atleast_2d(np.asarray(y, dtype=float))
-    sx, sy, txy = diametrical_stress_cartesian(X, Y, P / h, R)
+    sx, sy, txy = huang2014(X, Y, P, R, h, 15)
     return float(np.squeeze(np.sqrt((sx - sy)**2 + 4.0 * txy**2)))
-
+    
 
 # Evaluate at disk centre (x=0, y=0) with hardcoded values
-DEL_SIGMA_ANALYTICAL = del_sigma_disk(P_DISK, R_DISK, H_DISK, x=0.0, y=0.0)
+DEL_SIGMA_ANALYTICAL = del_sigma_disk(P_DISK, R_DISK, H_DISK, x= 0, y= 0)
 
 
 # ── Step 2 helpers ────────────────────────────────────────────────────────────
@@ -458,13 +462,13 @@ def plot_diameter_C_optimisation(delta_wrap, cx, cy, r_px, wavelengths_nm, thick
 
     C_opt = optimise_C_from_diameter(delta_wrap, cx, cy, r_px, wavelengths_nm, thickness_m)
 
-    c_json5 = ", ".join(f"{C:.2e}" for C in C_opt)
+    c_str = np.array2string(C_opt, formatter={"float_kind": lambda x: f"{x:.6e}"}, separator=" , ")
     print("\n── Diameter-profile C optimisation ───────────────────────────────")
     print(f"  {'λ (nm)':>8}  {'C_opt (1/Pa)':>14}")
     print(f"  {'-'*8}  {'-'*14}")
     for wl_nm, C in zip(wavelengths_nm, C_opt):
-        print(f"  {wl_nm:>8}  {C:>14.4e}")
-    print(f"\n  JSON5:  C : [{c_json5}]")
+        print(f"  {wl_nm:>8}  {C:>14.6e}")
+    print(f"\n  C : {c_str}")
     print("─────────────────────────────────────────────────────────────────\n")
 
     n_wl = len(wavelengths_nm)
@@ -492,6 +496,59 @@ def plot_diameter_C_optimisation(delta_wrap, cx, cy, r_px, wavelengths_nm, thick
     plt.show()
 
     return C_opt
+
+
+# ── C_opt at specific disk points ─────────────────────────────────────────────
+
+def print_c_opt_at_points(delta_wrap, cx, cy, r_px, wavelengths_nm, thickness_m):
+    """
+    Compute and print C_opt at specific physical (x, y) positions on the disk.
+
+    For each point: C_opt = δ·λ / (2π·Δσ_analytical·t)
+    Uses a 3×3 patch average of delta_wrap at the corresponding pixel.
+    """
+    points = [
+        (0.0,           0.0,          "center (0, 0)"),
+        (R_DISK / 3,    R_DISK / 3,   "+R/3, +R/3"),
+        (R_DISK / 4,    R_DISK / 4,   "+R/4, +R/4"),
+        (-R_DISK / 4,  -R_DISK / 4,   "-R/4, -R/4"),
+    ]
+
+    scale = R_DISK / r_px          # m per pixel
+    H, W  = delta_wrap.shape[:2]
+    wavelengths_m = [wl * 1e-9 for wl in wavelengths_nm]
+    n_wl = len(wavelengths_nm)
+
+    print("\n── C_opt at specific disk points ─────────────────────────────────────")
+    header = f"  {'Point':>18}  {'Δσ_ana (MPa)':>14}"
+    for wl in wavelengths_nm:
+        header += f"  {'C@'+str(wl)+'nm (1/Pa)':>20}"
+    print(header)
+    print(f"  {'-'*18}  {'-'*14}" + f"  {'-'*20}" * n_wl)
+
+    for x_m, y_m, label in points:
+        ds_ana = del_sigma_disk(P_DISK, R_DISK, H_DISK, x_m, y_m)
+
+        # Physical coords → pixel (row increases in same direction as +y here)
+        col = cx + x_m / scale
+        row = cy + y_m / scale
+        r0 = int(np.clip(round(row) - 1, 0, H - 1))
+        r1 = int(np.clip(round(row) + 2, 1, H))
+        c0 = int(np.clip(round(col) - 1, 0, W - 1))
+        c1 = int(np.clip(round(col) + 2, 1, W))
+
+        dw_avg = delta_wrap[r0:r1, c0:c1, :].mean(axis=(0, 1))
+
+        row_str = f"  {label:>18}  {ds_ana / 1e6:>14.4f}"
+        for wl_m, dw in zip(wavelengths_m, dw_avg):
+            if ds_ana > 1.0:
+                c_opt = (dw * wl_m) / (2.0 * np.pi * ds_ana * thickness_m)
+            else:
+                c_opt = float("nan")
+            row_str += f"  {c_opt:>20.6e}"
+        print(row_str)
+
+    print("──────────────────────────────────────────────────────────────────────\n")
 
 
 # ── Main pipeline ─────────────────────────────────────────────────────────────
@@ -546,6 +603,8 @@ def image_to_step2(params, output_dir="."):
     # ── Single-pixel extraction ───────────────────────────────────────────────
     theta_val_single      = theta[iy, ix]
     delta_wrap_val_single = delta_wrap[iy, ix, :]
+    if not np.all(np.isfinite(delta_wrap_val_single)):
+        print(f"  WARNING: NaN/Inf in delta_wrap at center pixel ({ix},{iy}): {delta_wrap_val_single}")
 
     # ── 3×3 patch average (centred on disk center) ────────────────────────────
     r0, r1 = iy - 1, iy + 2   # rows: iy-1, iy, iy+1
@@ -587,11 +646,14 @@ def image_to_step2(params, output_dir="."):
         colors = ["steelblue", "tomato"]
         bars   = ax.bar(labels, vals, color=colors, width=0.4, edgecolor="k", linewidth=0.8)
         for bar, v in zip(bars, vals):
-            ax.text(bar.get_x() + bar.get_width() / 2, v + 0.3,
+            label_y = v if np.isfinite(v) else 0.0
+            ax.text(bar.get_x() + bar.get_width() / 2, label_y + 0.3,
                     f"{v:.3f}°", ha="center", va="bottom", fontsize=10)
         ax.set_title(f"λ = {wl} nm", fontsize=11)
         ax.set_ylabel("δ (degrees)", fontsize=10)
-        ax.set_ylim(0, max(vals) * 1.15)
+        finite_max = np.nanmax([v for v in vals if np.isfinite(v)]) if any(np.isfinite(v) for v in vals) else None
+        if finite_max is not None and finite_max > 0:
+            ax.set_ylim(0, finite_max * 1.15)
         ax.grid(axis="y", alpha=0.3)
     plt.tight_layout()
     plt.show()
@@ -610,6 +672,9 @@ def image_to_step2(params, output_dir="."):
 
     # ── Step B: C sweep & RMSE plot using patch-averaged δ ───────────────────
     plot_rmse_vs_C(delta_wrap_val, wavelengths, thickness)
+
+    # ── C_opt at specific disk points ─────────────────────────────────────────
+    print_c_opt_at_points(delta_wrap, cx, cy, r_px, wavelengths, thickness)
 
     # ── Δσ map from step-2 results (using input C, first fringe order) ─────────
     if C_input is not None and len(C_input) == len(wavelengths):

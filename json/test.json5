@@ -1,15 +1,21 @@
 {
-    // Incoming normalized Stokes vector [S1_hat, S2_hat, S3_hat]
-    S_i_hat : [0.0, 0.0, 1.0], // Incoming polarization state
-    binning: 2,
+      // Incoming normalized Stokes vector [S1_hat, S2_hat, S3_hat]
+    S_i_hat : [0.0, 0.0, -1.0], // Incoming polarization state
+    binning: 1,
     //crop : [498, 674, 257, 427], //  Crop region as [x1, x2, y1, y2]
-    crop : [0, 505, 0, 505], //  Crop region as [x1, x2, y1, y2]
+  //crop : [952, 1230, 420, 676], //  Crop region as [x1, x2, y1, y2] //disk1
+   crop : [950, 1298, 390, 672], // 
+  //  crop : [1304, 1686, 464, 846], //  Crop region as [x1, x2, y1, y2]
     wavelengths : [650, 550, 450], // R, G, B wavelengths (nm)
-   C : [1.32000912e-11, 1.36075394e-11, 1.04029480e-11], // stress-optic coefficient for each wavelength (1/Pa)
-    //  C : [1.55e-09, 1.60e-09, 1.604e-09], 
-    // C : [1.51315418e-07, 1.55986081e-07, 1.19251178e-07], 
-    //C : [ 3e-09, 3e-09, 3e-09], 
-    thickness : 0.00934, // thickness of sample in m
+   //C : [1.51315418e-07, 1.55986081e-07, 1.19251178e-07], // stress-optic coefficient for each wavelength (1/Pa)
+  // C : [1.55e-09, 1.60e-09, 1.604e-09], 
+   // C : [ 3e-12, 3e-12, 3e-12], 
+  //   C : [ 3e-09, 3e-09, 3e-09], 
+   C : [1.81e-11, 1.669e-11, 1.342e-11],
+   // C : [7.90e-13, 7.32e-13, 6.55e-13],
+ //C : [  1.520675e-13 , 1.388125e-13 ,1.216794e-13],
+  //C : [  1.520675e-11 , 1.388125e-11 ,1.216794e-11],
+    thickness : 0.00686, // thickness of sample in m
     polarisation_efficiency : 0.95,
    // folderName : "/mnt/d/photoelastimetry/2026_03_11_16_40_31_271/02002060_diskSaving1",
 //2026_03_11_16_40_31_271/02002060_diskSaving1/0000000/'

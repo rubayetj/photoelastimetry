@@ -1,29 +1,35 @@
 {
     // Incoming normalized Stokes vector [S1_hat, S2_hat, S3_hat]
     S_i_hat : [0.0, 0.0, 1.0], // Incoming polarization state
-    binning: 2,
-    //crop : [498, 674, 257, 427], //  Crop region as [x1, x2, y1, y2]
-  //crop : [952, 1230, 420, 676], //  Crop region as [x1, x2, y1, y2] //disk1
-   crop : [950, 1298, 390, 672], // 
-  //  crop : [1304, 1686, 464, 846], //  Crop region as [x1, x2, y1, y2]
+    binning: 1,
+  //  crop : [498, 674, 257, 427], //  Crop region as [x1, x2, y1, y2]
+  //crop : [952, 1230, 420, 688], //  Crop region as [x1, x2, y1, y2] //disk1
+    // crop : [1120, 1966, 88, 790],
+   //crop : [800, 1666, 320, 898],
+    crop : [0, 200, 0, 200],
+   //crop : [0, 100, 0, 100], // 
+  //crop : [1304, 1686, 464, 846], //  Crop region as [x1, x2, y1, y2]
     wavelengths : [650, 550, 450], // R, G, B wavelengths (nm)
-   //C : [1.51315418e-07, 1.55986081e-07, 1.19251178e-07], // stress-optic coefficient for each wavelength (1/Pa)
-    // C : [1.55e-09, 1.60e-09, 1.604e-09], 
-   // C : [ 3e-12, 3e-12, 3e-12], 
-  //   C : [ 3e-09, 3e-09, 3e-09], 
-   // C : [1.81e-11, 1.669e-11, 1.342e-11],
-     C : [7.90e-13, 7.32e-13, 6.55e-13],
-    thickness : 0.00934, // thickness of sample in m
+   
+    C : [ 1.810721e-11 , 1.669723e-11,  1.342844e-11 ], // calibrated from fake 
+    // stress-optic coefficient for each wavelength (1/Pa)
+  //  C : [1.81e-11, 1.669e-11, 1.342e-11],// fake value
+    thickness : 0.00699, // thickness of sample in m
     polarisation_efficiency : 0.95,
    // folderName : "/mnt/d/photoelastimetry/2026_03_11_16_40_31_271/02002060_diskSaving1",
    //2026_03_11_16_40_31_271/02002060_diskSaving1/0000000/'
     //input_filename : "/mnt/d/photoelastimetry/cp/disk_synthetic_images.tiff",
    // input_filename : "/mnt/d/photoelastimetry/images/test/still_20260501_173655_024364.tiff",
-   input_filename : "/mnt/d/photoelastimetry/cp1/disk_2_413.tiff",
+     //input_filename : "/mnt/d/photoelastimetry/cp1/278.tiff",
+          input_filename : "/mnt/d/photoelastimetry/images/test/disk_synthetic_images.tiff",
+   //input_filename : "/mnt/d/photoelastimetry/cp1/disk_synthetic_images.tiff",
+   //input_filename : "/mnt/d/photoelastimetry/cp1/disk_2_413.tiff",
     output_filename : "images/disk/predicted_stress_map.tiff",
     debug: false,
-    
     knot_spacing: 8,
     max_iterations: 100,
-   //circle_center: [69, 62],  // [cx, cy, r_px] — update r_px with actual radius in pixels
+    n: 200,              // synthetic grid resolution (pixels per side)
+  circle_center: [99.5, 99.5, 99.5],
+ 
+  //circle_center: [71.40, 61.9, 66.2],  // [cx, cy, r_px] — update r_px with actual radius in pixels
 }
